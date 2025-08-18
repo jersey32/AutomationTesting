@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const USERNAME = 'eSquaredDev';
 const PASSWORD = 'eSquared1!';
-const CUSTOMER_NUMBER = 'C17290';
+const CUSTOMER_NUMBER = 'C17292';
 const BASE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/(W(10))/Main?ScreenId=SO301000';
 
 test.setTimeout(120000);
@@ -43,7 +43,7 @@ async function interactWithGridCells(frame) {
 }
 
 async function createPayment(frame) {
-  // Try to use a more robust selector if possible instead of the icon character
+  // This is a workaround for the icon character, which may not be stable
   await frame.getByRole('button', { name: '' }).click();
   await frame.locator('#ctl00_phG_tab_oi_menu_item_4').getByText('Payments').click();
   await frame.locator('#ctl00_phG_tab_t17_detgrid_at_tlb_ul').getByText('Create Payment').click();
@@ -72,7 +72,7 @@ async function fillShipmentDetails(frame) {
   await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edWeight"]').press('Enter');
 }
 
-test('SO Prepay flow', async ({ page }) => {
+test('SO NetTerms flow', async ({ page }) => {
   // Log in to the application
   await login(page);
 
@@ -83,27 +83,24 @@ test('SO Prepay flow', async ({ page }) => {
 
   // Fill out customer and order details
   await fillCustomer(frame, CUSTOMER_NUMBER);
-  await fillDescription(frame, 'Test SO Prepay');
+  await fillDescription(frame, 'Test SO NET terms');
   await addItem(frame);
   await interactWithGridCells(frame);
 
-  // Remove hold and move order to Awaiting Payment status
+  // Remove hold and progress order through workflow
   await frame.locator('#ctl00_phDS_ds_ToolBar_ReleaseFromHold').getByText('Remove Hold').click();
-  await frame.getByText('Awaiting Payment').click();
-
-  // Create payment for the order
-  await createPayment(frame);
-
-  // Progress order through workflow: Open -> Send to POP -> Order Processing -> Send to Staging
   await frame.getByText('Open', { exact: true }).click();
+
+  // Closing the message box
+  await frame.locator('qp-long-run div').nth(4).click();
+  
+  // Send order to POP, then to Staging, and interact with grid cells again
   await frame.locator('#ctl00_phDS_ds_ToolBar_sendToPOP').getByText('Send to POP').click();
   await frame.getByText('Order Processing').click();
   await frame.locator('#ctl00_phDS_ds_ToolBar_sendToStagingCst').getByText('Send to Staging').click();
-
-  // Interact with grid cells again after staging
   await interactWithGridCells(frame);
 
-  // Create shipment, fill shipment details, and confirm shipment
+  // Create and fill shipment details, then confirm shipment
   await createshipment(frame);
   await fillShipmentDetails(frame);
   await frame.locator('#ctl00_phDS_ds_ToolBar_ConfirmShipmentAction').getByText('Confirm Shipment').click();

@@ -20,6 +20,7 @@ test('Create Customer', async ({ page }) => {
   await frame.getByRole('textbox', { name: 'State:' }).fill('AZ');
   await frame.getByRole('textbox', { name: 'Postal Code:' }).fill('85001');
   await frame.getByRole('textbox', { name: 'Account Email:' }).fill('jbaron32@e2cc.com');
+  await frame.getByRole('textbox', { name: 'Business 1:' }).fill('123-456-7890');
 
   // Save the customer
   await frame.getByRole('button', { name: 'Save' }).click();
