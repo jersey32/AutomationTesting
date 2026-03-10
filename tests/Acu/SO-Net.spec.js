@@ -4,6 +4,7 @@ const USERNAME = 'eSquaredDev';
 const PASSWORD = 'eSquared1!';
 const CUSTOMER_NUMBER = 'C17292';
 const BASE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/(W(10))/Main?ScreenId=SO301000';
+const INVOICE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/Main?ScreenId=SO303000';
 
 test.setTimeout(120000);
 
@@ -72,6 +73,13 @@ async function fillShipmentDetails(frame) {
   await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edWeight"]').press('Enter');
 }
 
+async function loginInvoice(page) {
+  await page.goto(INVOICE_URL);
+  await page.getByRole('textbox', { name: 'Username' }).fill(USERNAME);
+  await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
+  await page.getByRole('button', { name: 'Sign In' }).click();
+}
+
 test('SO NetTerms flow', async ({ page }) => {
   // Log in to the application
   await login(page);
@@ -92,7 +100,7 @@ test('SO NetTerms flow', async ({ page }) => {
   await frame.getByText('Open', { exact: true }).click();
 
   // Closing the message box
-  await frame.locator('qp-long-run div').nth(4).click();
+  //await frame.locator('qp-long-run div').nth(4).click();
   
   // Send order to POP, then to Staging, and interact with grid cells again
   await frame.locator('#ctl00_phDS_ds_ToolBar_sendToPOP').getByText('Send to POP').click();
@@ -104,4 +112,23 @@ test('SO NetTerms flow', async ({ page }) => {
   await createshipment(frame);
   await fillShipmentDetails(frame);
   await frame.locator('#ctl00_phDS_ds_ToolBar_ConfirmShipmentAction').getByText('Confirm Shipment').click();
+});
+
+
+test('Invoice the sales order', async ({ page }) => {
+  // Log in to the application
+  await loginInvoice(page);
+  
+  const iframeLocator = page.locator('iframe[name="main"]');
+  await iframeLocator.waitFor();
+  const frame = await iframeLocator.contentFrame();
+
+  // Fill out customer and order details
+  await fillCustomer(frame, CUSTOMER_NUMBER);
+  await frame.locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
+  await frame.getByRole('cell', { name: ' ', exact: true }).locator('div').nth(1).click();
+  await frame.getByRole('button', { name: 'Add & Close' }).click();
+  await frame.getByRole('cell', { name: 'Taxes', exact: true }).click();
+  await frame.getByRole('cell', { name: 'Configuration', exact: true }).click();
+  await frame.locator('#ctl00_phDS_ds_ToolBar_Release').getByText('Release').click
 });
