@@ -1,27 +1,45 @@
-const { test, expect } = require('@playwright/test');
+import { test } from '@playwright/test';
 
+const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(15))/Main?ScreenId=AR303000';
+
+const CUSTOMER_DATA = {
+  accountName: 'Test Customer',
+  addressLine1: '123 Test St',
+  city: 'Arizona',
+  state: 'AZ',
+  postalCode: '85001',
+  email: 'jbaron32@e2cc.com',
+  phone: '09111111111',
+};
+
+async function login(page) {
+  await page.goto(BASE_URL);
+  await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
+  await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
+  await page.getByRole('button', { name: 'Sign In' }).click();
+}
+
+async function fillCustomerDetails(frame, data) {
+  await frame.getByRole('textbox', { name: 'Account Name:' }).fill(data.accountName);
+  await frame.getByRole('textbox', { name: 'Address Line 1:' }).fill(data.addressLine1);
+  await frame.getByRole('textbox', { name: 'City:' }).fill(data.city);
+  await frame.getByRole('textbox', { name: 'State:' }).fill(data.state);
+  await frame.getByRole('textbox', { name: 'Postal Code:' }).fill(data.postalCode);
+  await frame.getByRole('textbox', { name: 'Account Email:' }).fill(data.email);
+  await frame.locator('input[name="ctl00$phG$tab$t0$DefContact1$edDefContactPXMaskEdit1"]').fill(data.phone);
+}
+
+async function saveRecord(frame) {
+  await frame.locator('#ctl00_phDS_ds_ToolBar_Save div').nth(3).click();
+}
 
 test('Create Customer', async ({ page }) => {
-  // Go to login page and sign in
-  await page.goto('https://acumaticadev.e2cc.com/ESquaredNPL/(W(10))/Main?ScreenId=AR303000');
-  await page.getByRole('textbox', { name: 'Username' }).fill('eSquaredDev');
-  await page.getByRole('textbox', { name: 'Password' }).fill('eSquared1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
+  await login(page);
 
-  // Wait for the iframe to be available and get its frame
   const iframeLocator = page.locator('iframe[name="main"]');
   await iframeLocator.waitFor();
-  const frame = await iframeLocator.contentFrame();
+  const frame = iframeLocator.contentFrame();
 
-  // Fill customer details
-  await frame.getByRole('textbox', { name: 'Account Name:' }).fill('Test Customer');
-  await frame.getByRole('textbox', { name: 'Address Line 1:' }).fill('123 Test St');
-  await frame.getByRole('textbox', { name: 'City:' }).fill('Arizona');
-  await frame.getByRole('textbox', { name: 'State:' }).fill('AZ');
-  await frame.getByRole('textbox', { name: 'Postal Code:' }).fill('85001');
-  await frame.getByRole('textbox', { name: 'Account Email:' }).fill('jbaron32@e2cc.com');
-  await frame.getByRole('textbox', { name: 'Business 1:' }).fill('123-456-7890');
-
-  // Save the customer
-  await frame.getByRole('button', { name: 'Save' }).click();
+  await fillCustomerDetails(frame, CUSTOMER_DATA);
+  await saveRecord(frame);
 });

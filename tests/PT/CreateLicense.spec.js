@@ -5,8 +5,8 @@ const CONFIG = {
   baseUrl: 'https://e2ccptweb2.e2cc.com:8082',
   loginUrl: '/Login.aspx?ReturnUrl=%2fPages%2fLicenses.aspx',
   credentials: {
-    email: 'jbaron@e2cc.com',
-    password: 'Greengrass55%',
+    email: process.env.PT_USERNAME,
+    password: process.env.PT_PASSWORD,
   },
   licenseData: {
     status: '2',
@@ -36,10 +36,11 @@ async function selectCompany(page, companyName) {
   await page.getByRole('link', { name: companyName }).click();
 }
 
-async function selectCostCode(page, companyName) {
+async function selectCostCode(page) {
   await page.getByTitle('Select Company Cost Code ID').click();
-  await page.getByRole('link', { name: companyName }).click();
-  await page.getByRole('row', { name: '(select)', exact: true }).getByRole('cell').click();
+  await page.waitForLoadState('domcontentloaded');
+  const locator = page.locator('.Cell.LocationID').first();
+  await locator.click();
 }
 
 async function selectCostCodeValue(page, costCodeId) {

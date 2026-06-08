@@ -1,110 +1,45 @@
 import { test, expect } from '@playwright/test';
 
-const USERNAME = 'eSquaredDev';
-const PASSWORD = 'eSquared1!';
-const CUSTOMER_NUMBER = 'C17290';
-const BASE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/(W(10))/Main?ScreenId=SO301000';
+const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(13))/Main?ScreenId=SO301000';
 
-test.setTimeout(120000);
-
-async function login(page) {
+test('Sales Order Creation', async ({ page }) => {
+  // Login
   await page.goto(BASE_URL);
-  await page.getByRole('textbox', { name: 'Username' }).fill(USERNAME);
-  await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
+  await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
+  await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
-}
 
-async function fillCustomer(frame, customerNumber) {
-  const customerBox = frame.getByRole('textbox', { name: 'Customer:' });
-  await customerBox.click();
-  await customerBox.fill(customerNumber);
-  await customerBox.press('Enter');
-}
+  const frame = page.locator('iframe[name="main"]').contentFrame();
 
-async function fillDescription(frame, description) {
-  const descBox = frame.getByRole('textbox', { name: 'Description:' });
-  await descBox.click();
-  await descBox.fill(description);
-  await descBox.press('Enter');
-}
+  // Fill in order header
+  await frame.getByRole('textbox', { name: 'Customer:' }).fill('C10008');
+  await frame.getByRole('textbox', { name: 'Customer:' }).press('Enter');
+  await frame.getByRole('textbox', { name: 'Description:' }).fill('Test Description');
+  await frame.getByRole('textbox', { name: 'Estimated Ship Date:' }).click();
+  await frame.getByRole('textbox', { name: 'Estimated Ship Date:' }).fill('12/31/2026');
+  await frame.getByRole('textbox', { name: 'Customer Order Nbr.:' }).fill('Test Order');
+  await frame.getByRole('textbox', { name: 'External Reference:' }).fill('Test External Ref');
 
-async function addItem(frame) {
-  await frame.locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
-  const itemLocator = frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0 div').nth(1);
-  await itemLocator.waitFor({ state: 'visible' });
-  await itemLocator.click();
+  // Select WMS from dropdown
+  await frame.locator('#ctl00_phF_form_t0_CstPXDropDown8 > .editorCont > .editorWrap').click();
+  await frame.getByText('WMS').click();
+
+  // Add items
+  await page.locator('iframe[name="main"]').contentFrame().locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
+  await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0 div').nth(1).click();
   await frame.getByRole('button', { name: 'Add & Close' }).click();
-}
 
-async function interactWithGridCells(frame) {
+  // Review tabs and remove hold
   await frame.getByRole('cell', { name: 'Delay Codes', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Taxes', exact: true }).click();
   await frame.getByRole('cell', { name: 'Configuration', exact: true }).click();
-}
-
-async function createPayment(frame) {
-  // Try to use a more robust selector if possible instead of the icon character
-  await frame.getByRole('button', { name: '' }).click();
-  await frame.locator('#ctl00_phG_tab_oi_menu_item_4').getByText('Payments').click();
-  await frame.locator('#ctl00_phG_tab_t17_detgrid_at_tlb_ul').getByText('Create Payment').click();
-  const paymentMethodBox = frame.getByRole('textbox', { name: 'Payment Method:' });
-  await paymentMethodBox.click();
-  await paymentMethodBox.fill('CHECK');
-  await paymentMethodBox.press('Enter');
-  await frame.getByRole('button', { name: 'OK' }).click();
-}
-
-async function createshipment(frame) {
-  await frame.locator('#ctl00_phDS_ds_ToolBar_CreateShipmentIssue').getByText('Create Shipment').click();
-  await frame.locator('#ctl00_phG_pnlCreateShipment_formCreateShipment_edSiteID > .controlCont > .buttonsCont > .sprite-icon').click();
-  await frame.locator('#ctl00_phG_pnlCreateShipment_formCreateShipment_edSiteID_pnl_tlb_ul').getByText('Select').click();
-  await frame.getByRole('button', { name: 'OK' }).click();
-}
-
-async function fillShipmentDetails(frame) {
-  await frame.getByRole('cell', { name: 'Packages', exact: true }).click();
-  await frame.locator('li:nth-child(2) > .toolsBtn > .toolBtnNormal > .sprite-icon > .main-icon-img').first().click();
-  await frame.locator('.edit > td:nth-child(5)').click();
-  await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edBoxID_text"]').fill('10-8-3');
-  await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edBoxID_text"]').press('Enter');
-  await frame.locator('.edit > td:nth-child(13)').click();
-  await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edWeight"]').fill('0.5');
-  await frame.locator('[id="_ctl00_phG_tab_t4_gridPackages_lv0_edWeight"]').press('Enter');
-}
-
-test('SO Prepay flow', async ({ page }) => {
-  // Log in to the application
-  await login(page);
-
-  // Wait for the main iframe to load and get its frame context
-  const iframeLocator = page.locator('iframe[name="main"]');
-  await iframeLocator.waitFor();
-  const frame = await iframeLocator.contentFrame();
-
-  // Fill out customer and order details
-  await fillCustomer(frame, CUSTOMER_NUMBER);
-  await fillDescription(frame, 'Test SO Prepay');
-  await addItem(frame);
-  await interactWithGridCells(frame);
-
-  // Remove hold and move order to Awaiting Payment status
+  await frame.getByRole('cell', { name: 'Taxes', exact: true }).click();
+  await frame.getByRole('cell', { name: 'Asset Info', exact: true }).click();
+  await frame.getByRole('cell', { name: 'Commissions', exact: true }).click();
+  await frame.getByRole('cell', { name: 'Financial', exact: true }).click();
   await frame.locator('#ctl00_phDS_ds_ToolBar_ReleaseFromHold').getByText('Remove Hold').click();
-  await frame.getByText('Awaiting Payment').click();
+  await frame.locator('qp-long-run div').nth(4).click();
 
-  // Create payment for the order
-  await createPayment(frame);
-
-  // Progress order through workflow: Open -> Send to POP -> Order Processing -> Send to Staging
-  await frame.getByText('Open', { exact: true }).click();
+  // Send to POP and staging
   await frame.locator('#ctl00_phDS_ds_ToolBar_sendToPOP').getByText('Send to POP').click();
-  await frame.getByText('Order Processing').click();
   await frame.locator('#ctl00_phDS_ds_ToolBar_sendToStagingCst').getByText('Send to Staging').click();
-
-  // Interact with grid cells again after staging
-  await interactWithGridCells(frame);
-
-  // Create shipment, fill shipment details, and confirm shipment
-  await createshipment(frame);
-  await fillShipmentDetails(frame);
-  await frame.locator('#ctl00_phDS_ds_ToolBar_ConfirmShipmentAction').getByText('Confirm Shipment').click();
 });
