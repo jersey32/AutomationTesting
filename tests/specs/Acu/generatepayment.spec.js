@@ -21,5 +21,11 @@ test('View Payment', async ({ page }) => {
  const frame = page.locator('iframe[name="main"]').contentFrame();
  await frame.locator('#ctl00_phDS_ds_ToolBar_MenuOpener').click();
  await frame.getByText('View Payment Link', { exact: true }).click();
+ 
+});
+
+test('Print SO', async ({ page }) => {
+ const frame = page.locator('iframe[name="main"]').contentFrame();
+ await frame.locator('#ctl00_phDS_ds_ToolBar_MenuOpener').click();
  await frame.getByText('Print Sales Order', { exact: true }).click();
 });

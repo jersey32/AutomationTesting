@@ -20,10 +20,10 @@ test('getByRole - form fields', async ({ page }) => {
 });
 
 test('getByRole - checkboxes and radio buttons', async ({ page }) => {
-await page.getByRole('radio', { name: 'Standard' }).check();
-await page.getByRole('radio', { name: 'Express' }).check();
+  await page.getByRole('radio', { name: 'Standard' }).check();
+  await page.getByRole('radio', { name: 'Express' }).check();
 });
 
-test('Drag and Drop', async ({ page }) => {
-await page.locator('#draggable').dragTo(page.locator('#droppable'));
+test('drag and drop', async ({ page }) => {
+  await page.locator('#draggable').dragTo(page.locator('#droppable'));
 });
