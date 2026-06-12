@@ -59,6 +59,13 @@ export const WEBMETHEUS_SCRIPT = [
   'ZEN_API_Key',
 ];
 
+export const SAUCEDEMO_ITEMS = [
+  'Sauce Labs Backpack',
+  'Sauce Labs Bike Light',
+  'Sauce Labs Bolt T-Shirt',
+  'Sauce Labs Fleece Jacket',
+];
+
 export const ART_TEMPLATES = [
   'Call Log - Verizon',
   'Carrier Commissions Paid',
