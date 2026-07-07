@@ -87,3 +87,12 @@ export const ART_TEMPLATES = [
   'Sysco ProMiles merge',
   'Wholesale - MTM Asset',
 ];
+
+export const REVIEW_TABS = [
+  'Delay Codes',
+  'Configuration',
+  'Taxes',
+  'Asset Info',
+  'Commissions',
+  'Financial',
+];

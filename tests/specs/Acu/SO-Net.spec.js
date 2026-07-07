@@ -1,15 +1,9 @@
 import { test } from '@playwright/test';
+import { REVIEW_TABS } from '../../pages/menu-page';
+
 
 const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(13))/Main?ScreenId=SO301000';
 
-const REVIEW_TABS = [
-  'Delay Codes',
-  'Configuration',
-  'Taxes',
-  'Asset Info',
-  'Commissions',
-  'Financial',
-];
 
 test('Sales Order Creation', async ({ page }) => {
   await test.step('login', async () => {
@@ -31,8 +25,9 @@ test('Sales Order Creation', async ({ page }) => {
   });
 
   await test.step('add items', async () => {
+    await frame.locator('#ctl00_phDS_ds_ToolBar_Save div').nth(3).click();
     await frame.locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
-    await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0').getByRole('checkbox').check();
+    await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0 div').nth(1).click();
     await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_btnAddClose').click();
   });
 
