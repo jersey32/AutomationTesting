@@ -1,11 +1,8 @@
 import { test, expect } from '@playwright/test';
+import {login, ACU_URL} from '../../pages/login';
 
-const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(13))/Main?ScreenId=IN202500';
-
-test.setTimeout(120000);
-
-async function login(page) {
-  await page.goto(BASE_URL);
+async function logins(page) {
+  await page.goto(`${ACU_URL}IN202500`);
   await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
   await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
@@ -23,7 +20,7 @@ async function updateStockItem(frame, itemCode = 'TESTITEM', lastCost = '100') {
 }
 
 test('Update Stock Item Last Cost', async ({ page }) => {
-  await login(page);
+  await logins(page);
 
   const iframeLocator = page.locator('iframe[name="main"]');
   await iframeLocator.waitFor();

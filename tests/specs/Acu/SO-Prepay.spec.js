@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-
-const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(13))/Main?ScreenId=SO301000';
+import { REVIEW_TABS } from '../../pages/menu-page';
+import { login, ACU_URL } from '../../pages/login';
 
 test('Sales Order Creation', async ({ page }) => {
   // Login
-  await page.goto(BASE_URL);
+  await page.goto(`${ACU_URL}SO301000`);
   await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
   await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();

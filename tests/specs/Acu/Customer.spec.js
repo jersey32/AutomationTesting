@@ -1,11 +1,9 @@
 import { test } from '@playwright/test';
 import { CUSTOMER_DATA } from '../../pages/menu-page';
+import { login, ACU_URL } from '../../pages/login';
 
-const BASE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/(W(6))/Main?ScreenId=AR303000';
-
-
-async function login(page) {
-  await page.goto(BASE_URL);
+async function logins(page) {
+  await page.goto(`${ACU_URL}AR303000`);
   await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
   await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
@@ -26,7 +24,7 @@ async function saveRecord(frame) {
 }
 
 test('Create Customer', async ({ page }) => {
-  await login(page);
+  await logins(page);
 
   const iframeLocator = page.locator('iframe[name="main"]');
   await iframeLocator.waitFor();
