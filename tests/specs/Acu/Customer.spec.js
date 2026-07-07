@@ -1,16 +1,8 @@
 import { test } from '@playwright/test';
+import { CUSTOMER_DATA } from '../../pages/menu-page';
 
-const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(15))/Main?ScreenId=AR303000';
+const BASE_URL = 'https://acumaticadev.e2cc.com/ESquaredNPL/(W(6))/Main?ScreenId=AR303000';
 
-const CUSTOMER_DATA = {
-  accountName: 'Test Customer',
-  addressLine1: '123 Test St',
-  city: 'Arizona',
-  state: 'AZ',
-  postalCode: '85001',
-  email: 'jbaron32@e2cc.com',
-  phone: '09111111111',
-};
 
 async function login(page) {
   await page.goto(BASE_URL);

@@ -31,6 +31,18 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
+    viewport: { width: 1280, height: 720 },
+
+    deviceScaleFactor: 1,
+
+    timezoneId: 'UTC',
+
+    colorScheme: 'light',
+
+    javaScriptEnabled: true,
+
+    ignoreHTTPSErrors: true,
   },
 
   /* Configure projects for major browsers */

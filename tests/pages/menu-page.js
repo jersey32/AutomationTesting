@@ -96,3 +96,23 @@ export const REVIEW_TABS = [
   'Commissions',
   'Financial',
 ];
+
+export const CUSTOMER_DATA = {
+  accountName: 'Test Customer',
+  addressLine1: '123 Test St',
+  city: 'Arizona',
+  state: 'AZ',
+  postalCode: '85001',
+  email: 'jbaron32@e2cc.com',
+  phone: '09111111111',
+};
+export const FORM_DATA = {
+  vendor: 'V10029',
+  warehouse: 'eSquared',
+  trackingNumber: '1234567890',
+  trackingQuantity: '123',
+  trackingUrl: 'https://Trackingurl.com',
+  carrier: 'FedEx',
+  weight: '400',
+};
+

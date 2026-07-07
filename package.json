@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "perf": "playwright test tests/specs/performance.spec.js",
+    "perf:debug": "playwright test tests/specs/performance.spec.js --debug",
+    "perf:headed": "playwright test tests/specs/performance.spec.js --headed"
   },
   "keywords": [],
   "author": "",
