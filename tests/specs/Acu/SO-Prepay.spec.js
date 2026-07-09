@@ -1,45 +1,37 @@
-import { test, expect } from '@playwright/test';
-import { REVIEW_TABS } from '../../pages/menu-page';
-import { login, ACU_URL } from '../../pages/login';
+import { test } from '@playwright/test';
+import { LoginPage, ACU_URL } from '../../pages/LoginPage.js';
+import { AcumaticaSalesOrderPage } from '../../pages/AcumaticaSalesOrderPage.js';
+import { REVIEW_TABS } from '../../pages/menu-page.js';
+
+let loginPage;
+let salesOrderPage;
 
 test('Sales Order Creation', async ({ page }) => {
-  // Login
-  await page.goto(`${ACU_URL}SO301000`);
-  await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
-  await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
-  await page.getByRole('button', { name: 'Sign In' }).click();
+  loginPage = new LoginPage(page);
+  salesOrderPage = new AcumaticaSalesOrderPage(page);
 
-  const frame = page.locator('iframe[name="main"]').contentFrame();
+  await loginPage.loginAcumatica(`${ACU_URL}SO301000`, process.env.ACU_USERNAME, process.env.ACU_PASSWORD);
 
-  // Fill in order header
-  await frame.getByRole('textbox', { name: 'Customer:' }).fill('C10008');
-  await frame.getByRole('textbox', { name: 'Customer:' }).press('Enter');
-  await frame.getByRole('textbox', { name: 'Description:' }).fill('Test Description');
-  await frame.getByRole('textbox', { name: 'Estimated Ship Date:' }).click();
-  await frame.getByRole('textbox', { name: 'Estimated Ship Date:' }).fill('12/31/2026');
-  await frame.getByRole('textbox', { name: 'Customer Order Nbr.:' }).fill('Test Order');
-  await frame.getByRole('textbox', { name: 'External Reference:' }).fill('Test External Ref');
+  const frame = await salesOrderPage.getMainFrame();
 
-  // Select WMS from dropdown
-  await frame.locator('#ctl00_phF_form_t0_CstPXDropDown8 > .editorCont > .editorWrap').click();
-  await frame.getByText('WMS').click();
+  const orderData = {
+    customer: 'C10008',
+    description: 'Test Description',
+    estimatedShipDate: '12/31/2026',
+    customerOrderNbr: 'Test Order',
+    externalReference: 'Test External Ref',
+  };
 
-  // Add items
-  await page.locator('iframe[name="main"]').contentFrame().locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
-  await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0 div').nth(1).click();
-  await frame.getByRole('button', { name: 'Add & Close' }).click();
+  await salesOrderPage.fillOrderHeader(frame, orderData);
+  await salesOrderPage.selectWMSFromDropdown(frame);
+  await salesOrderPage.addItems(frame);
 
-  // Review tabs and remove hold
-  await frame.getByRole('cell', { name: 'Delay Codes', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Configuration', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Taxes', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Asset Info', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Commissions', exact: true }).click();
-  await frame.getByRole('cell', { name: 'Financial', exact: true }).click();
-  await frame.locator('#ctl00_phDS_ds_ToolBar_ReleaseFromHold').getByText('Remove Hold').click();
-  await frame.locator('qp-long-run div').nth(4).click();
+  for (const name of REVIEW_TABS) {
+    await salesOrderPage.clickTab(frame, name);
+  }
 
-  // Send to POP and staging
-  await frame.locator('#ctl00_phDS_ds_ToolBar_sendToPOP').getByText('Send to POP').click();
-  await frame.locator('#ctl00_phDS_ds_ToolBar_sendToStagingCst').getByText('Send to Staging').click();
+  await salesOrderPage.removeHold(frame);
+  await salesOrderPage.waitForLongRunProcess(frame);
+  await salesOrderPage.sendToPOP(frame);
+  await salesOrderPage.sendToStagingCst(frame);
 });

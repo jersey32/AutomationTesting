@@ -1,29 +1,30 @@
 import { test } from '@playwright/test';
+import { PracticePage } from '../pages/PracticePage.js';
 
-const PRACTICE_URL = 'https://testautomationpractice.blogspot.com/p/playwrightpractice.html';
+let practicePage;
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(PRACTICE_URL);
-  await page.waitForLoadState('domcontentloaded');
+  practicePage = new PracticePage(page);
+  await practicePage.navigateTo();
 });
 
-test('getByRole - buttons', async ({ page }) => {
-  await page.getByRole('button', { name: 'Primary Action' }).click();
-  await page.getByRole('button', { name: 'Toggle Button' }).click();
+test('getByRole - buttons', async () => {
+  await practicePage.clickPrimaryActionButton();
+  await practicePage.clickToggleButton();
 });
 
-test('getByRole - form fields', async ({ page }) => {
-  await page.getByRole('textbox', { name: 'Username' }).fill('testuser');
-  await page.getByRole('textbox', { name: 'Email Address:' }).fill('test@123.com');
-  await page.getByRole('textbox', { name: 'Password' }).fill('test@123');
-  await page.getByRole('spinbutton', { name: 'Your Age' }).fill('30');
+test('getByRole - form fields', async () => {
+  await practicePage.fillUsername('testuser');
+  await practicePage.fillEmail('test@123.com');
+  await practicePage.fillPassword('test@123');
+  await practicePage.fillAge('30');
 });
 
-test('getByRole - checkboxes and radio buttons', async ({ page }) => {
-  await page.getByRole('radio', { name: 'Standard' }).check();
-  await page.getByRole('radio', { name: 'Express' }).check();
+test('getByRole - checkboxes and radio buttons', async () => {
+  await practicePage.selectStandardRadio();
+  await practicePage.selectExpressRadio();
 });
 
-test('drag and drop', async ({ page }) => {
-  await page.locator('#draggable').dragTo(page.locator('#droppable'));
+test('drag and drop', async () => {
+  await practicePage.dragAndDrop();
 });

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { APIClient } from '../../pages/APIClient.js';
 
 const BASE_URL = process.env.API_BASE_URL;
 const HEADERS = {
@@ -6,9 +7,10 @@ const HEADERS = {
   'Content-Type': 'application/json',
 };
 
-// GET /users
+const apiClient = new APIClient(BASE_URL, HEADERS);
+
 test('GET /users - returns list of users', async ({ request }) => {
-  const res = await request.get(`${BASE_URL}/users?page=1`, { headers: HEADERS });
+  const res = await apiClient.get(request, '/users', { page: 1 });
   expect(res.status()).toBe(200);
 
   const body = await res.json();
@@ -23,9 +25,8 @@ test('GET /users - returns list of users', async ({ request }) => {
   });
 });
 
-// GET /users/:id
 test('GET /users/:id - returns a single user', async ({ request }) => {
-  const res = await request.get(`${BASE_URL}/users/2`, { headers: HEADERS });
+  const res = await apiClient.get(request, '/users/2');
   expect(res.status()).toBe(200);
 
   const body = await res.json();
@@ -37,16 +38,14 @@ test('GET /users/:id - returns a single user', async ({ request }) => {
   });
 });
 
-// GET /users/:id - not found
 test('GET /users/:id - returns 404 for non-existent user', async ({ request }) => {
-  const res = await request.get(`${BASE_URL}/users/9999`, { headers: HEADERS });
+  const res = await apiClient.get(request, '/users/9999');
   expect(res.status()).toBe(404);
 });
 
-// POST /users
 test('POST /users - creates a new user', async ({ request }) => {
   const payload = { name: 'John Doe', job: 'QA Engineer' };
-  const res = await request.post(`${BASE_URL}/users`, { headers: HEADERS, data: payload });
+  const res = await apiClient.post(request, '/users', payload);
   expect(res.status()).toBe(201);
 
   const body = await res.json();
@@ -55,10 +54,9 @@ test('POST /users - creates a new user', async ({ request }) => {
   expect(body).toHaveProperty('createdAt');
 });
 
-// PUT /users/:id
 test('PUT /users/:id - updates a user', async ({ request }) => {
   const payload = { name: 'Jane Doe', job: 'Lead QA' };
-  const res = await request.put(`${BASE_URL}/users/2`, { headers: HEADERS, data: payload });
+  const res = await apiClient.put(request, '/users/2', payload);
   expect(res.status()).toBe(200);
 
   const body = await res.json();
@@ -66,10 +64,9 @@ test('PUT /users/:id - updates a user', async ({ request }) => {
   expect(body).toHaveProperty('updatedAt');
 });
 
-// PATCH /users/:id
 test('PATCH /users/:id - partially updates a user', async ({ request }) => {
   const payload = { job: 'Senior QA' };
-  const res = await request.patch(`${BASE_URL}/users/2`, { headers: HEADERS, data: payload });
+  const res = await apiClient.patch(request, '/users/2', payload);
   expect(res.status()).toBe(200);
 
   const body = await res.json();
@@ -77,16 +74,14 @@ test('PATCH /users/:id - partially updates a user', async ({ request }) => {
   expect(body).toHaveProperty('updatedAt');
 });
 
-// DELETE /users/:id
 test('DELETE /users/:id - deletes a user', async ({ request }) => {
-  const res = await request.delete(`${BASE_URL}/users/2`, { headers: HEADERS });
+  const res = await apiClient.delete(request, '/users/2');
   expect(res.status()).toBe(204);
 });
 
-// POST /register
 test('POST /register - registers a user successfully', async ({ request }) => {
   const payload = { email: 'eve.holt@reqres.in', password: 'pistol' };
-  const res = await request.post(`${BASE_URL}/register`, { headers: HEADERS, data: payload });
+  const res = await apiClient.post(request, '/register', payload);
   expect(res.status()).toBe(200);
 
   const body = await res.json();
@@ -94,30 +89,27 @@ test('POST /register - registers a user successfully', async ({ request }) => {
   expect(body).toHaveProperty('token');
 });
 
-// POST /register - missing password
 test('POST /register - returns 400 when password is missing', async ({ request }) => {
   const payload = { email: 'eve.holt@reqres.in' };
-  const res = await request.post(`${BASE_URL}/register`, { headers: HEADERS, data: payload });
+  const res = await apiClient.post(request, '/register', payload);
   expect(res.status()).toBe(400);
 
   const body = await res.json();
   expect(body).toHaveProperty('error');
 });
 
-// POST /login
 test('POST /login - logs in successfully', async ({ request }) => {
   const payload = { email: 'eve.holt@reqres.in', password: 'cityslicka' };
-  const res = await request.post(`${BASE_URL}/login`, { headers: HEADERS, data: payload });
+  const res = await apiClient.post(request, '/login', payload);
   expect(res.status()).toBe(200);
 
   const body = await res.json();
   expect(body).toHaveProperty('token');
 });
 
-// POST /login - missing password
 test('POST /login - returns 400 when password is missing', async ({ request }) => {
   const payload = { email: 'eve.holt@reqres.in' };
-  const res = await request.post(`${BASE_URL}/login`, { headers: HEADERS, data: payload });
+  const res = await apiClient.post(request, '/login', payload);
   expect(res.status()).toBe(400);
 
   const body = await res.json();

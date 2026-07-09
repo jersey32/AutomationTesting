@@ -1,36 +1,47 @@
 import { test, expect } from '@playwright/test';
-import { SAUCEDEMO_URL } from '../pages/login.js';
+import { LoginPage, SAUCEDEMO_URL } from '../pages/LoginPage.js';
+import { InventoryPage } from '../pages/InventoryPage.js';
+
+let loginPage;
+let inventoryPage;
 
 test.describe('Authenticated', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(SAUCEDEMO_URL);
-    await page.fill('#user-name', process.env.SAUCEDEMO_USERNAME);
-    await page.fill('#password', process.env.SAUCEDEMO_PASSWORD);
-    await page.click('#login-button');
+    loginPage = new LoginPage(page);
+    inventoryPage = new InventoryPage(page);
+    await loginPage.loginSauceDemo(process.env.SAUCEDEMO_USERNAME, process.env.SAUCEDEMO_PASSWORD);
   });
 
-  test('Customer Login', async ({ page }) => {
-    await expect(page.locator('.inventory_list')).toBeVisible();
-    await expect(page.locator('.title')).toHaveText('Products');
-    await expect(page.locator('.shopping_cart_link')).toBeVisible();
-    await expect(page.locator('.social_twitter')).toBeVisible();
-    await expect(page.locator('.social_facebook')).toBeVisible();
-    await expect(page.locator('.social_linkedin')).toBeVisible();
+  test('Customer Login', async () => {
+    const inventoryListVisible = await inventoryPage.isInventoryListVisible();
+    const cartVisible = await inventoryPage.isShoppingCartVisible();
+    const twitterVisible = await inventoryPage.isTwitterIconVisible();
+    const facebookVisible = await inventoryPage.isFacebookIconVisible();
+    const linkedinVisible = await inventoryPage.isLinkedinIconVisible();
+
+    expect(inventoryListVisible).toBeTruthy();
+    expect(await inventoryPage.getTitleText()).toContain('Products');
+    expect(cartVisible).toBeTruthy();
+    expect(twitterVisible).toBeTruthy();
+    expect(facebookVisible).toBeTruthy();
+    expect(linkedinVisible).toBeTruthy();
   });
 
   test('Customer Logout', async ({ page }) => {
-    await page.click('#react-burger-menu-btn');
-    await page.click('#logout_sidebar_link');
-    await expect(page).toHaveURL(SAUCEDEMO_URL);
-    await expect(page.locator('.login_logo')).toBeVisible();
+    await inventoryPage.openMenu();
+    await inventoryPage.logout();
+    expect(page.url()).toBe(SAUCEDEMO_URL);
+    const logoVisible = await inventoryPage.isLoginLogoVisible();
+    expect(logoVisible).toBeTruthy();
   });
 });
 
 test('Customer Login with incorrect user/pass', async ({ page }) => {
-  await page.goto(SAUCEDEMO_URL);
-  await page.fill('#user-name', 'standard_user');
-  await page.fill('#password', 'secret_sauces');
-  await page.click('#login-button');
-  await expect(page.locator('.error-message-container')).toBeVisible();
-  await expect(page.locator('.error-message-container')).toHaveText('Epic sadface: Username and password do not match any user in this service');
+  loginPage = new LoginPage(page);
+  await loginPage.goto(SAUCEDEMO_URL);
+  await loginPage.fill('#user-name', 'standard_user');
+  await loginPage.fill('#password', 'secret_sauces');
+  await loginPage.click('#login-button');
+  const errorMessage = await loginPage.getErrorMessage();
+  expect(errorMessage).toContain('Epic sadface: Username and password do not match any user in this service');
 });

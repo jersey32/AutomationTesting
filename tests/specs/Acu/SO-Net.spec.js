@@ -1,47 +1,47 @@
 import { test } from '@playwright/test';
-import { REVIEW_TABS } from '../../pages/menu-page';
-import { login, ACU_URL } from '../../pages/login';
+import { LoginPage, ACU_URL } from '../../pages/LoginPage.js';
+import { AcumaticaSalesOrderPage } from '../../pages/AcumaticaSalesOrderPage.js';
+import { REVIEW_TABS } from '../../pages/menu-page.js';
 
-
-const BASE_URL = 'https://esquared-sandbox-25-2.acumatica.com/(W(13))/Main?ScreenId=SO301000';
-
+let loginPage;
+let salesOrderPage;
 
 test('Sales Order Creation', async ({ page }) => {
+  loginPage = new LoginPage(page);
+  salesOrderPage = new AcumaticaSalesOrderPage(page);
+
   await test.step('login', async () => {
-    await page.goto(`${ACU_URL}SO301000`);
-    await page.getByRole('textbox', { name: 'Username' }).fill(process.env.ACU_USERNAME);
-    await page.getByRole('textbox', { name: 'Password' }).fill(process.env.ACU_PASSWORD);
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await loginPage.loginAcumatica(`${ACU_URL}SO301000`, process.env.ACU_USERNAME, process.env.ACU_PASSWORD);
   });
 
-  const frame = page.locator('iframe[name="main"]').contentFrame();
+  const frame = await salesOrderPage.getMainFrame();
 
   await test.step('fill order header', async () => {
-    await frame.getByRole('textbox', { name: 'Customer:' }).fill('C10008');
-    await frame.getByRole('textbox', { name: 'Customer:' }).press('Enter');
-    await frame.getByRole('textbox', { name: 'Description:' }).fill('Test Description');
-    await frame.getByRole('textbox', { name: 'Estimated Ship Date:' }).fill('12/31/2026');
-    await frame.getByRole('textbox', { name: 'Customer Order Nbr.:' }).fill('Test Order');
-    await frame.getByRole('textbox', { name: 'External Reference:' }).fill('Test External Ref');
+    const orderData = {
+      customer: 'C10008',
+      description: 'Test Description',
+      estimatedShipDate: '12/31/2026',
+      customerOrderNbr: 'Test Order',
+      externalReference: 'Test External Ref',
+    };
+    await salesOrderPage.fillOrderHeader(frame, orderData);
   });
 
   await test.step('add items', async () => {
-    await frame.locator('#ctl00_phDS_ds_ToolBar_Save div').nth(3).click();
-    await frame.locator('#ctl00_phG_tab_t0_grid_at_tlb_ul').getByText('Add Items').click();
-    await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_gripSiteStatus_colHS_0_0 div').nth(1).click();
-    await frame.locator('#ctl00_phG_PanelAddSiteStatus_PanelAddSiteStatus_btnAddClose').click();
+    await salesOrderPage.saveRecord(frame);
+    await salesOrderPage.addItemsNoWMS(frame);
   });
 
   await test.step('review tabs', async () => {
     for (const name of REVIEW_TABS) {
-      await frame.getByRole('cell', { name, exact: true }).click();
+      await salesOrderPage.clickTab(frame, name);
     }
   });
 
   await test.step('remove hold and send to staging', async () => {
-    await frame.locator('#ctl00_phDS_ds_ToolBar_ReleaseFromHold').getByText('Remove Hold').click();
-    await frame.locator('qp-long-run div').nth(4).click();
-    await frame.locator('#ctl00_phDS_ds_ToolBar_ReleaseFromCreditHold').getByText('Remove Credit Hold').click();
-    await frame.locator('#ctl00_phDS_ds_ToolBar_sendToStaging').getByText('Send To Staging').click();
+    await salesOrderPage.removeHold(frame);
+    await salesOrderPage.waitForLongRunProcess(frame);
+    await salesOrderPage.removeCreditHold(frame);
+    await salesOrderPage.sendToStaging(frame);
   });
 });

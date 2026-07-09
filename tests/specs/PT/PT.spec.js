@@ -1,53 +1,58 @@
 import { test, expect } from '@playwright/test';
+import { LoginPage, LOGIN_URL_PT } from '../../pages/LoginPage.js';
+import { PhoneTrackerPage } from '../../pages/PhoneTrackerPage.js';
 import { HOME_BUTTONS, WATCHDOG_BUTTONS, KAM_Dashboard_BUTTONS, COMPANIES_LINKS } from '../../pages/menu-page.js';
-import { LOGIN_URL_PT } from '../../pages/login.js';
 
+let loginPage;
+let phoneTrackerPage;
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(LOGIN_URL_PT);
-  await page.waitForLoadState('domcontentloaded');
-  await page.getByRole('textbox', { name: 'User Name:' }).fill(process.env.PT_USERNAME);
-  await page.getByRole('textbox', { name: 'Password' }).fill(process.env.PT_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
+  loginPage = new LoginPage(page);
+  phoneTrackerPage = new PhoneTrackerPage(page);
+  await loginPage.loginPhoneTracker(process.env.PT_USERNAME, process.env.PT_PASSWORD);
 });
 
-//Checking the presence of buttons on the Home Page
-test('Home Page - buttons visible', async ({ page }) => {
+test('Home Page - buttons visible', async () => {
   for (const name of HOME_BUTTONS) {
-    await expect(page.getByRole('button', { name })).toBeVisible();
+    const isVisible = await phoneTrackerPage.isButtonVisible(name);
+    expect(isVisible).toBeTruthy();
   }
 });
 
-//Checking the presence of buttons on the Watchdog Dashboard page
-test('Watchdog Dashboard - buttons visible', async ({ page }) => {
-  await page.getByText('Watchdog Dashboard').click();
+test('Watchdog Dashboard - buttons visible', async () => {
+  await phoneTrackerPage.navigateToWatchdogDashboard();
   for (const name of WATCHDOG_BUTTONS) {
-    await expect(page.getByRole('button', { name })).toBeVisible();
+    const isVisible = await phoneTrackerPage.isButtonVisible(name);
+    expect(isVisible).toBeTruthy();
   }
 });
 
-//Checking the presence of buttons on the KAM Dashboard page
-test('KAM Dashboard - buttons visible', async ({ page }) => {
+test('KAM Dashboard - buttons visible', async () => {
   for (const name of KAM_Dashboard_BUTTONS) {
-    await expect(page.getByRole('button', { name })).toBeVisible();
+    const isVisible = await phoneTrackerPage.isButtonVisible(name);
+    expect(isVisible).toBeTruthy();
   }
 });
 
-//Checking the presence of the "Companies" link and its sub-links under the "Companies" section
-test('Companies', async ({ page }) => {
- await page.getByRole('link', { name: 'Companies' }).hover();
+test('Companies', async () => {
+  await phoneTrackerPage.navigateToCompanies();
   for (const name of COMPANIES_LINKS) {
-    await expect(page.getByRole('link', { name })).toBeVisible();
+    const isVisible = await phoneTrackerPage.isCompanyLinkVisible(name);
+    expect(isVisible).toBeTruthy();
   }
 });
 
-test('Employees/POCs/Equip.', async ({ page }) => {
- await page.getByRole('link', { name: 'Employees/POCs/Equipment' }).click();
- await expect(page.getByText('Employees/POCs', { exact: true })).toBeVisible();
+test('Employees/POCs/Equip.', async () => {
+  await phoneTrackerPage.navigateToEmployees();
+  const employeesVisible = await phoneTrackerPage.isEmployeesTextVisible();
+  expect(employeesVisible).toBeTruthy();
 
- //Verify the presence of the "100, Device" link and its details
- await page.getByRole('link', { name: '100, Device' }).click();
- await expect(page.getByText('Device', { exact: true })).toBeVisible();
- await expect(page.getByText('100', { exact: true })).toBeVisible();
- await expect(page.getByRole('link', { name: 'R9PT402TLZD' })).toBeVisible();
+  await phoneTrackerPage.clickDeviceLink();
+  const deviceVisible = await phoneTrackerPage.isDeviceTextVisible();
+  const idVisible = await phoneTrackerPage.isDeviceIdVisible();
+  const serialVisible = await phoneTrackerPage.isSerialNumberVisible();
+
+  expect(deviceVisible).toBeTruthy();
+  expect(idVisible).toBeTruthy();
+  expect(serialVisible).toBeTruthy();
 });

@@ -1,30 +1,32 @@
-import {test, expect} from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { PerformancePage } from '../../pages/PerformancePage.js';
 
-const start = Date.now();
-const end = Date.now();
+let performancePage;
 
-test('PT Performance Test', async ({ page }) => {
-    await page.goto('https://phonetracker.e2cc.com/');
-    const loadTime = end - start;
-    console.log(`Page load time: ${loadTime} ms`);
-    expect(loadTime).toBeLessThan(6000); // Assert that the page load time is less than 6 seconds
+test.beforeEach(async ({ page }) => {
+  performancePage = new PerformancePage(page);
 });
 
-test ('Acu Performance Test', async ({ page }) => {
-    await page.goto('https://esquared.acumatica.com/Frames/Login.aspx?ReturnUrl=%2f');
-    const loadTime = end - start;
-    console.log(`Page load time: ${loadTime} ms`);
-    expect(loadTime).toBeLessThan(6000); // Assert that the page load time is less than 6 seconds
+test('PT Performance Test', async () => {
+  const loadTime = await performancePage.measurePageLoadTime('https://phonetracker.e2cc.com/');
+  console.log(`Page load time: ${loadTime} ms`);
+  expect(loadTime).toBeLessThan(6000);
 });
 
-test ('API Check Performance Test', async ({ page }) => {
- const response = await page.request.get('https://reqres.in/api');
- console.log(`API response status: ${response.status()}`);
- expect(response.status()).toBe(200);
+test('Acu Performance Test', async () => {
+  const loadTime = await performancePage.measurePageLoadTime('https://esquared.acumatica.com/Frames/Login.aspx?ReturnUrl=%2f');
+  console.log(`Page load time: ${loadTime} ms`);
+  expect(loadTime).toBeLessThan(6000);
 });
 
-test('API Check Performance Test 2', async ({ page }) => {
-    const response = await page.request.get('https://reqres.in/api/users/9999');
-    console.log(`API response status: ${response.status()}`);
-    expect(response.status()).toBe(401);
+test('API Check Performance Test', async ({ request }) => {
+  const status = await performancePage.checkAPIResponseStatus(request, 'https://reqres.in/api');
+  console.log(`API response status: ${status}`);
+  expect(status).toBe(200);
+});
+
+test('API Check Performance Test 2', async ({ request }) => {
+  const status = await performancePage.checkAPIResponseStatus(request, 'https://reqres.in/api/users/9999');
+  console.log(`API response status: ${status}`);
+  expect(status).toBe(401);
 });

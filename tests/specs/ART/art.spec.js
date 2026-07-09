@@ -1,19 +1,22 @@
 import { test, expect } from '@playwright/test';
-import { ART_URL } from '../../pages/login.js';
+import { ARTPage } from '../../pages/ARTPage.js';
 import { ART_TEMPLATES } from '../../pages/menu-page.js';
 
+let artPage;
+
 test.beforeEach(async ({ page }) => {
-  await page.goto(ART_URL);
+  artPage = new ARTPage(page);
+  await artPage.navigateTo();
 });
 
-//Check if ART is online by verifying the presence of the "Automatic Reporting Tool" text
-test('Check if ART is online', async ({ page }) => {
-  await expect(page.getByText('Automatic Reporting Tool')).toBeVisible();
+test('Check if ART is online', async () => {
+  const isVisible = await artPage.isOnlineTextVisible();
+  expect(isVisible).toBeTruthy();
 });
 
-//Check the presence of all the templates in the template dropdown
 test('Check the templates', async ({ page }) => {
+  const content = await page.getByRole('combobox').textContent();
   for (const name of ART_TEMPLATES) {
-    await expect(page.getByRole('combobox')).toContainText(name);
+    expect(content).toContain(name);
   }
 });

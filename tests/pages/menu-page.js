@@ -116,3 +116,20 @@ export const FORM_DATA = {
   weight: '400',
 };
 
+export const TABS = [
+  'Delay Codes',
+  'Configuration',
+  'Taxes',
+  'Asset Info',
+  'Commissions',
+  'Financial',
+];
+
+export const LEAD_DATA = {
+  firstName: 'Jersey',
+  lastName: 'Baron',
+  email: 'jbaron123@e2cc.com',
+  phone: '09111111111',
+  companyName: 'Test Company'
+}
+
