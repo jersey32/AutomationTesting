@@ -18,5 +18,6 @@ export class AcumaticaBasePage {
 
   async save(frame) {
     await frame.locator('#ctl00_phDS_ds_ToolBar_Save div').nth(3).click()
+    
   }
 }
