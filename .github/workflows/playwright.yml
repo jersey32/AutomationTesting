@@ -31,8 +31,8 @@ jobs:
         env:
           SAUCEDEMO_USERNAME: ${{ secrets.SAUCEDEMO_USERNAME }}
           SAUCEDEMO_PASSWORD: ${{ secrets.SAUCEDEMO_PASSWORD }}
-          ACU_USERNAME: ${{ secrets.ACU_USERNAME }}
-          ACU_PASSWORD: ${{ secrets.ACU_PASSWORD }}
+          ACUMATICA_USERNAME: ${{ secrets.ACUMATICA_USERNAME }}
+          ACUMATICA_PASSWORD: ${{ secrets.ACUMATICA_PASSWORD }}
           PT_USERNAME: ${{ secrets.PT_USERNAME }}
           PT_PASSWORD: ${{ secrets.PT_PASSWORD }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
